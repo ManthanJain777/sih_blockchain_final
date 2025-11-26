@@ -1,0 +1,209 @@
+PFS File Hasher - Application Routes & Endpoints
+
+📍 Routing Architecture
+Type: Hash-based Client-Side Routing (SPA)  
+Base URL: `yourapp.com/`
+
+---
+
+🌐 Main Application Routes
+
+| Route | Hash URL | Page Component | Description |
+|-------|----------|----------------|-------------|
+| Home | `#home` or `/` | `HomePage.tsx` | Landing page with feature overview and "How It Works" section |
+| Upload | `#upload` | `UploadPage.tsx` | File upload, hashing, and IPFS upload interface |
+| Verify | `#verify` | `VerifyPage.tsx` | Media verification and hash lookup interface |
+| About | `#about` | `AboutPage.tsx` | Information about the platform, technologies, and use cases |
+
+---
+
+📄 Page Details & Functionality
+
+1. Home Page (`#home`)
+File: `/pages/HomePage.tsx`
+
+Features:
+Hero section with application overview
+4 Feature cards:
+File Hashing
+IPFS Storage
+Blockchain Verification
+Media Verification
+"How It Works" 3-step guide
+Navigation buttons to Upload and Verify pages
+
+Routes out:
+→ `#upload` (Get Started button)
+→ `#verify` (Verify File button)
+
+---
+
+2. Upload Page (`#upload`)
+File: `/pages/UploadPage.tsx`
+
+Components:
+`WalletConnection` - MetaMask wallet connection
+`FileUploader` - File selection and hash generation
+`MetadataDisplay` - JSON metadata preview
+Real-time clock display
+Transaction details display (after blockchain submission)
+
+Key Functions:
+`handleConnectionChange(connected, address)` - Wallet connection state
+`handleFileData(data)` - File data management
+`handleUploadToIPFS()` - IPFS upload simulation
+`handleSubmitToBlockchain()` - Blockchain submission simulation
+
+Data Flow:
+User connects wallet
+User selects file
+Generate SHA256 hash + IPFS CID + Geo-tags
+Display metadata aggregation (JSON)
+Upload to IPFS
+Submit to blockchain
+Show transaction details
+
+---
+
+3. Verify Page (`#verify`)
+File: `/pages/VerifyPage.tsx`
+
+Components:
+`VerificationModule` - Hash input and verification interface
+Verification process guide (3 steps)
+"Why Verify?" benefits section
+
+Key Functions:
+Hash input field
+Verification lookup (simulated blockchain query)
+Display metadata results:
+File Hash
+Timestamp
+Geolocation
+IPFS CID
+
+---
+
+4. About Page (`#about`)
+File: `/pages/AboutPage.tsx`
+
+Sections:
+Mission statement
+Technologies Section (4 cards):
+SHA256 Hashing
+IPFS Storage
+Blockchain Verification
+Geolocation Tagging
+Use Cases Section (3 cards):
+Journalism & News
+Digital Art & NFTs
+Legal Documentation
+Important Notice (demo disclaimer)
+
+---
+
+🔧 Shared Components
+
+| Component | File | Usage | Pages |
+|-----------|------|-------|-------|
+| Navigation | `Navigation.tsx` | Top navigation bar with logo and page links | All pages |
+| ChatBot | `ChatBot.tsx` | AI assistant (bottom-right floating button) | All pages |
+| Logo | `Logo.tsx` | Custom SVG hash symbol logo | Navigation |
+| WalletConnection | `WalletConnection.tsx` | MetaMask wallet interface | Upload |
+| FileUploader | `FileUploader.tsx` | File selection and hashing | Upload |
+| MetadataDisplay | `MetadataDisplay.tsx` | JSON metadata preview | Upload |
+| VerificationModule | `VerificationModule.tsx` | Hash verification interface | Verify |
+
+---
+
+🎯 Navigation Flow
+
+```
+App Entry (/)
+    ↓
+#home (Default)
+    ├─→ #upload (Get Started / Upload link)
+    ├─→ #verify (Verify File button)
+    └─→ #about (About link)
+
+Navigation Bar (Available on all pages):
+├─ Home (#home)
+├─ Upload (#upload)
+├─ Verify (#verify)
+└─ About (#about)
+
+ChatBot (Accessible from all pages via floating button)
+```
+
+---
+
+🔄 State Management
+
+App.tsx (Main Router):
+```typescript
+currentPage: string (home|upload|verify|about)
+handlePageChange(page: string) - Updates URL hash
+```
+
+UploadPage.tsx:
+```typescript
+currentTime: Date
+walletConnected: boolean
+walletAddress: string
+fileData: FileData | null
+uploadSuccess: boolean
+blockchainSuccess: boolean
+```
+
+FileData Interface:
+```typescript
+{
+  fileName: string
+  fileHash: string
+  ipfsCID: string
+  latitude: number
+  longitude: number
+  timestamp: string
+}
+```
+
+---
+
+📡 Simulated API Endpoints (Mock Functions)
+
+All blockchain and IPFS interactions are currently simulated for demo purposes:
+
+| Action | Component | Function | Delay |
+|--------|-----------|----------|-------|
+| Wallet Connect | WalletConnection | `handleConnect()` | Instant |
+| File Hash | FileUploader | `handleFileChange()` | Instant |
+| IPFS Upload | UploadPage | `handleUploadToIPFS()` | 1000ms |
+| Blockchain Submit | UploadPage | `handleSubmitToBlockchain()` | 1500ms |
+| Hash Verify | VerificationModule | `handleVerify()` | 2000ms |
+
+---
+
+🗺️ URL Hash Examples
+
+```
+https://yourapp.com/           → Home page
+https://yourapp.com/#home      → Home page
+https://yourapp.com/#upload    → Upload page
+https://yourapp.com/#verify    → Verify page
+https://yourapp.com/#about     → About page
+```
+
+---
+
+📱 Additional Features
+
+ChatBot Assistant:
+Floating button (bottom-right)
+Available on all pages
+Knowledge base with 15+ Q&A responses
+Topics: file upload, verification, wallets, IPFS, troubleshooting
+
+Real-time Clock:
+Displayed on Upload page
+Updates every second
+Format: HH:MM:SS AM/PM
