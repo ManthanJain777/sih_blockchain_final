@@ -87,4 +87,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Design inspired by modern UI/UX principles
 - Thanks to the Polkadot ecosystem for enabling decentralized solutions"# polkadot_hackathon" 
 "# polkadot_hackathon" 
-# polkadot
+"# polkadot_final" 

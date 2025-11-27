@@ -1,7 +1,9 @@
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiPromise } from '@polkadot/api';
 import { web3Accounts, web3Enable, web3FromSource } from '@polkadot/extension-dapp';
 import { u8aToHex } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { ConnectionManager } from './ConnectionManager';
+import { getNetworkEndpoints, getDefaultNetwork, NetworkType } from './NetworkConfig';
 
 export interface FileVerificationData {
   fileHash: string;
@@ -24,18 +26,24 @@ export interface VerificationRecord {
   metadata: Record<string, any>;
 }
 
-export interface PolkadotNetworkConfig {
-  name: string;
-  providerUrl: string;
-  parachainId?: number;
-}
-
 export class MultiChainPolkadotService {
   private static instance: MultiChainPolkadotService;
   private api: ApiPromise | null = null;
   private accounts: any[] = [];
   private selectedAccount: any = null;
   private currentNetwork: string = 'polkadot'; // default network - main Polkadot network
+  private connectionManager: ConnectionManager;
+
+  public static getInstance(): MultiChainPolkadotService {
+    if (!MultiChainPolkadotService.instance) {
+      MultiChainPolkadotService.instance = new MultiChainPolkadotService();
+    }
+    return MultiChainPolkadotService.instance;
+  }
+
+  constructor() {
+    this.connectionManager = ConnectionManager.getInstance();
+  }
 
   public static getInstance(): MultiChainPolkadotService {
     if (!MultiChainPolkadotService.instance) {
@@ -54,67 +62,18 @@ export class MultiChainPolkadotService {
         throw new Error('No Polkadot extension found. Please install Polkadot.js extension.');
       }
 
-      // Use the default network with fallback endpoints
+      // Use the default network 
       const networkConfig = this.getNetworkConfig(this.currentNetwork);
-      const endpoints = this.getEndpointsWithFallback(networkConfig.providerUrl);
+      const provider = new WsProvider(networkConfig.providerUrl);
       
-      // Try connecting with timeout and fallback endpoints
-      let lastError: Error | null = null;
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`🔄 Attempting to connect to: ${endpoint}`);
-          
-          const provider = new WsProvider(endpoint, 3000); // 3 second connection timeout
-          
-          this.api = await Promise.race([
-            ApiPromise.create({ 
-              provider,
-              throwOnConnect: false,
-            }),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('Connection timeout')), 10000)
-            )
-          ]);
+      // Create API with additional options for better connection management
+      this.api = await ApiPromise.create({ 
+        provider,
+        throwOnConnect: false, // Don't throw immediately if connection fails
+      });
 
-          // Wait for the API to be ready with timeout
-          await Promise.race([
-            this.api.isReady,
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('API ready timeout')), 10000)
-            )
-          ]);
-
-          // Get accounts after connecting to API
-          this.accounts = await web3Accounts();
-          if (this.accounts.length > 0) {
-            this.selectedAccount = this.accounts[0];
-          }
-
-          console.log(`✅ Connected to ${this.currentNetwork} network via ${endpoint}`);
-          break; // Success, exit loop
-        } catch (error) {
-          console.warn(`⚠️ Connection failed to ${endpoint}:`, error);
-          lastError = error as Error;
-          
-          // Clean up failed connection
-          if (this.api) {
-            try {
-              await this.api.disconnect();
-            } catch (e) {
-              // Ignore disconnect errors
-            }
-            this.api = null;
-          }
-          
-          // Continue to next endpoint
-          continue;
-        }
-      }
-
-      // Check if connection succeeded
-      if (!this.api) {
-        throw lastError || new Error('All connection attempts failed');
-      }
+      // Wait for the API to be ready
+      await this.api.isReady;
 
       // Get accounts after connecting to API
       this.accounts = await web3Accounts();
@@ -152,97 +111,43 @@ export class MultiChainPolkadotService {
         name: 'Moonbeam',
         providerUrl: 'wss://wss.api.moonbeam.network'
       },
-      statemint: {
-        name: 'Statemint',
-        providerUrl: 'wss://statemint-rpc.polkadot.io'
-      },
       paseo: {
         name: 'Paseo (Testnet)',
-        providerUrl: 'wss://rpc.ibp.network/paseo' // Fixed: Removed invalid UUID path, using public RPC endpoint
+        providerUrl: 'wss://paseo.api.onfinality.io/public-ws',
+        fallbackUrls: ['wss://paseo-rpc.publicnode.com']
       }
     };
 
     return networks[network] || networks['polkadot']; // default to polkadot
   }
 
-  async switchNetwork(network: 'polkadot' | 'kusama' | 'acala' | 'astar' | 'moonbeam' | 'statemint' | 'paseo'): Promise<boolean> {
+  async switchNetwork(network: NetworkType): Promise<boolean> {
     try {
       this.currentNetwork = network;
-      const networkConfig = this.getNetworkConfig(network);
-      
-      // Disconnect existing connection
+
       if (this.api) {
-        try {
-          await this.api.disconnect();
-        } catch (e) {
-          // Ignore disconnect errors
-        }
-        this.api = null;
+        await this.api.disconnect();
       }
 
-      // Use the same connection logic with fallbacks
-      const endpoints = this.getEndpointsWithFallback(networkConfig.providerUrl);
-      
-      let lastError: Error | null = null;
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`🔄 Switching to ${network} via: ${endpoint}`);
-          
-          const provider = new WsProvider(endpoint, 3000); // 3 second connection timeout
-          
-          this.api = await Promise.race([
-            ApiPromise.create({ 
-              provider,
-              throwOnConnect: false,
-            }),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('Connection timeout')), 10000)
-            )
-          ]);
+      this.api = await this.connectionManager.connectWithFallback(network);
 
-          // Wait for the API to be ready with timeout
-          await Promise.race([
-            this.api.isReady,
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('API ready timeout')), 10000)
-            )
-          ]);
+      // Wait for the API to be ready
+      await this.api.isReady;
 
-          // Refresh accounts with the new connection
-          const extensions = await web3Enable('ZeroTrace-Polkadot-Verification');
-          if (extensions.length > 0) {
-            this.accounts = await web3Accounts();
-            if (this.accounts.length > 0) {
-              // Keep the same selected account if it exists in the new list, otherwise select first
-              if (!this.selectedAccount || !this.accounts.some(acc => acc.address === this.selectedAccount.address)) {
-                this.selectedAccount = this.accounts[0];
-              }
-            }
+      // Refresh accounts with the new connection
+      const extensions = await web3Enable('ZeroTrace-Polkadot-Verification');
+      if (extensions.length > 0) {
+        this.accounts = await web3Accounts();
+        if (this.accounts.length > 0) {
+          // Keep the same selected account if it exists in the new list, otherwise select first
+          if (!this.selectedAccount || !this.accounts.some(acc => acc.address === this.selectedAccount.address)) {
+            this.selectedAccount = this.accounts[0];
           }
-
-          console.log(`✅ Switched to ${network} network via ${endpoint}`);
-          return true;
-        } catch (error) {
-          console.warn(`⚠️ Failed to connect to ${endpoint}:`, error);
-          lastError = error as Error;
-          
-          // Clean up failed connection
-          if (this.api) {
-            try {
-              await this.api.disconnect();
-            } catch (e) {
-              // Ignore disconnect errors
-            }
-            this.api = null;
-          }
-          
-          // Continue to next endpoint
-          continue;
         }
       }
 
-      // All endpoints failed
-      throw lastError || new Error('All connection attempts failed');
+      console.log(`✅ Switched to ${network} network`);
+      return true;
     } catch (error) {
       console.error(`❌ Failed to switch to ${network} network:`, error);
       return false;
@@ -418,32 +323,9 @@ export class MultiChainPolkadotService {
   }
 
   async disconnect() {
-    if (this.api) {
-      await this.api.disconnect();
-      this.api = null;
-    }
+    await this.connectionManager.disconnect();
+    this.api = null;
     this.selectedAccount = null;
     this.accounts = [];
-  }
-
-  private getEndpointsWithFallback(primaryEndpoint: string): string[] {
-    const fallbacks: Record<string, string[]> = {
-      'wss://rpc.ibp.network/paseo': [
-        'wss://rpc.ibp.network/paseo',
-        'wss://paseo-rpc.dwellir.com',
-        'wss://paseo-rpc.polkadot.io'
-      ],
-      'wss://rpc.polkadot.io': [
-        'wss://rpc.polkadot.io',
-        'wss://polkadot-rpc.dwellir.com',
-        'wss://polkadot.api.onfinality.io/public-ws'
-      ],
-      'wss://kusama-rpc.polkadot.io': [
-        'wss://kusama-rpc.polkadot.io',
-        'wss://kusama-rpc.dwellir.com',
-        'wss://kusama.api.onfinality.io/public-ws'
-      ]
-    };
-    return fallbacks[primaryEndpoint] || [primaryEndpoint];
   }
 }

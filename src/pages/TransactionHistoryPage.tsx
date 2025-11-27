@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Search, ExternalLink, Calendar, Hash, Globe, CheckCircle, Shield } from 'lucide-react';
+import { Search, ExternalLink, Calendar, Hash, Globe, CheckCircle } from 'lucide-react';
 import { CertificatePolkadotService } from '../services/certificatePolkadotService';
 
 interface TransactionRecord {
@@ -17,11 +17,7 @@ interface TransactionRecord {
   type: 'upload' | 'verification';
 }
 
-interface TransactionHistoryPageProps {
-  isPolkadotConnected?: boolean;
-}
-
-export function TransactionHistoryPage({ isPolkadotConnected = false }: TransactionHistoryPageProps) {
+export function TransactionHistoryPage() {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,197 +82,174 @@ export function TransactionHistoryPage({ isPolkadotConnected = false }: Transact
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
-      {/* Radial Gradients */}
-      <div className="absolute -top-40 left-[5%] w-[600px] h-[600px] bg-gradient-to-br from-green-500/20 to-cyan-500/5 rounded-full blur-3xl opacity-60"></div>
-      <div className="absolute top-[10%] -right-40 w-[500px] h-[500px] bg-gradient-to-tl from-cyan-500/15 to-blue-500/5 rounded-full blur-3xl opacity-50"></div>
-      <div className="absolute -bottom-40 left-[20%] w-[500px] h-[500px] bg-gradient-to-tr from-blue-500/10 to-cyan-500/5 rounded-full blur-3xl opacity-40"></div>
+    <div className="min-h-[calc(100vh-4rem)] bg-background relative overflow-hidden">
+      {/* Background shapes */}
+      <div className="absolute -top-40 -left-40 w-[550px] h-[550px] bg-[#8B5CF6] rounded-[40%_60%_70%_30%/60%_30%_70%_40%] opacity-90"></div>
+      <div className="absolute top-[5%] -right-32 w-[500px] h-[500px] bg-[#2DD4BF] rounded-[60%_40%_30%_70%/40%_60%_70%_30%] opacity-90"></div>
 
-      <div className="container mx-auto px-4 py-16 max-w-6xl relative z-10">
-        {/* Header Section */}
-        <div className="text-center mb-12 animate-fade-up">
-          <h1 className="text-slate-100 mb-4 text-5xl uppercase font-black tracking-widest leading-tight">
-            Transaction History
+      <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
+        <div className="text-center mb-10">
+          <h1 className="text-foreground mb-4 text-4xl uppercase font-black tracking-tight">
+            Blockchain Transaction History
           </h1>
-          <p className="text-slate-400 mb-8 text-lg max-w-3xl mx-auto">
-            View all certificate-related transactions verified on the Polkadot blockchain
+          <p className="text-muted-foreground mb-6 text-lg">
+            View all certificate-related transactions on the Polkadot blockchain
           </p>
-
-          {/* Status Bar */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-slate-900/70 border border-cyan-500/20 rounded-xl text-slate-200 text-sm font-semibold">
-              <Globe size={18} className="text-cyan-400" />
-              <span>Polkadot Network Transactions</span>
-            </div>
-            {isPolkadotConnected ? (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E6007A] to-[#6F36BC] rounded-full text-white text-sm font-semibold shadow-lg">
-                <Shield size={16} />
-                <span>Polkadot Wallet Connected</span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-500 rounded-full text-white text-sm font-semibold">
-                <Shield size={16} />
-                <span>Connect Polkadot Wallet for Live Data</span>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Search and Filter Section */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cyan-400" size={18} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <input
               type="text"
               placeholder="Search by certificate name, hash, or transaction ID..."
-              className="w-full pl-12 pr-4 py-3 bg-slate-900/70 border border-cyan-500/20 hover:border-cyan-500/40 focus:border-cyan-500 rounded-xl text-slate-100 placeholder-slate-500 transition-all focus:outline-none focus:shadow-lg focus:shadow-cyan-500/20"
+              className="w-full pl-10 p-3 bg-card border-2 border-border/50 rounded-xl"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button
+          <Button 
             onClick={loadTransactionHistory}
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+            className="bg-gradient-to-r from-[#E6007A] to-[#6F36BC] hover:from-[#E6007A]/90 hover:to-[#6F36BC]/90 text-white font-semibold px-6 rounded-xl shadow-lg"
           >
-            Refresh
-          </button>
+            Refresh Transactions
+          </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {/* Total Certificates */}
-          <div className="p-6 bg-gradient-to-br from-slate-900/80 to-slate-950 border-2 border-blue-500/30 rounded-xl shadow-lg shadow-blue-500/10 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6 bg-gradient-to-br from-[#8B5CF6]/20 to-[#2DD4BF]/20 border-2 border-[#8B5CF6]/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#8B5CF6] to-[#2DD4BF] rounded-xl flex items-center justify-center">
                 <Hash className="text-white" size={24} />
               </div>
               <div>
-                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Total Certificates</p>
-                <p className="text-slate-100 font-bold text-3xl">{transactions.length}</p>
+                <p className="text-card-foreground/70 text-sm">Total Certificates</p>
+                <p className="text-card-foreground font-bold text-2xl">{transactions.length}</p>
               </div>
             </div>
-          </div>
+          </Card>
           
-          {/* Verified */}
-          <div className="p-6 bg-gradient-to-br from-slate-900/80 to-slate-950 border-2 border-emerald-500/30 rounded-xl shadow-lg shadow-emerald-500/10 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/30">
+          <Card className="p-6 bg-gradient-to-br from-[#2DD4BF]/20 to-[#3B82F6]/20 border-2 border-[#2DD4BF]/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#2DD4BF] to-[#3B82F6] rounded-xl flex items-center justify-center">
                 <CheckCircle className="text-white" size={24} />
               </div>
               <div>
-                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Verified</p>
-                <p className="text-slate-100 font-bold text-3xl">{transactions.filter(t => t.status === 'verified').length}</p>
+                <p className="text-card-foreground/70 text-sm">Verified</p>
+                <p className="text-card-foreground font-bold text-2xl">{transactions.filter(t => t.status === 'verified').length}</p>
               </div>
             </div>
-          </div>
+          </Card>
           
-          {/* Pending */}
-          <div className="p-6 bg-gradient-to-br from-slate-900/80 to-slate-950 border-2 border-amber-500/30 rounded-xl shadow-lg shadow-amber-500/10 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/30">
+          <Card className="p-6 bg-gradient-to-br from-[#F59E0B]/20 to-[#EF4444]/20 border-2 border-[#F59E0B]/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl flex items-center justify-center">
                 <Calendar className="text-white" size={24} />
               </div>
               <div>
-                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Pending</p>
-                <p className="text-slate-100 font-bold text-3xl">{transactions.filter(t => t.status === 'pending').length}</p>
+                <p className="text-card-foreground/70 text-sm">Last 30 Days</p>
+                <p className="text-card-foreground font-bold text-2xl">
+                  {transactions.filter(t => {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return new Date(t.timestamp) > thirtyDaysAgo;
+                  }).length}
+                </p>
               </div>
             </div>
-          </div>
-
-          {/* Failed */}
-          <div className="p-6 bg-gradient-to-br from-slate-900/80 to-slate-950 border-2 border-rose-500/30 rounded-xl shadow-lg shadow-rose-500/10 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-red-500 rounded-lg flex items-center justify-center shadow-lg shadow-rose-500/30">
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-[#6394F8]/20 to-[#2669DD]/20 border-2 border-[#6394F8]/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#6394F8] to-[#2669DD] rounded-xl flex items-center justify-center">
                 <Globe className="text-white" size={24} />
               </div>
               <div>
-                <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Networks</p>
-                <p className="text-slate-100 font-bold text-3xl">{new Set(transactions.map(t => t.parachain)).size}</p>
+                <p className="text-card-foreground/70 text-sm">Networks Used</p>
+                <p className="text-card-foreground font-bold text-2xl">{new Set(transactions.map(t => t.parachain)).size}</p>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Transactions Table */}
         {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-cyan-500"></div>
-            <p className="mt-6 text-slate-300 text-lg font-semibold">Loading transaction history...</p>
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E6007A]"></div>
+            <p className="mt-4 text-card-foreground">Loading transaction history...</p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border-2 border-cyan-500/30 shadow-2xl shadow-cyan-500/10 bg-gradient-to-br from-slate-900/80 to-slate-950 backdrop-blur-xl">
+          <Card className="p-6 bg-card border-2 border-border/50 shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-950/80 border-b border-cyan-500/20">
-                  <tr>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Certificate</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Transaction</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Block</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Date & Time</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Network</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Status</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Type</th>
-                    <th className="text-left py-4 px-6 text-slate-300 font-semibold text-sm uppercase tracking-wider">Actions</th>
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Certificate</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Transaction</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Block</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Date & Time</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Network</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Status</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Type</th>
+                    <th className="text-left py-4 px-2 text-card-foreground/70 font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/50">
+                <tbody>
                   {filteredTransactions.length > 0 ? (
                     filteredTransactions.map((tx) => (
-                      <tr key={tx.id} className="border-b border-slate-700/50 hover:bg-slate-900/30 transition-colors">
-                        <td className="py-4 px-6">
-                          <div className="font-medium text-slate-100 truncate max-w-xs">{tx.certificateName}</div>
-                          <div className="text-sm text-slate-400 truncate max-w-xs font-mono">{tx.certificateHash.slice(0, 12)}...{tx.certificateHash.slice(-6)}</div>
+                      <tr key={tx.id} className="border-b border-border/20 hover:bg-accent/30 transition-colors">
+                        <td className="py-4 px-2">
+                          <div className="font-medium text-card-foreground truncate max-w-xs">{tx.certificateName}</div>
+                          <div className="text-sm text-card-foreground/60 truncate max-w-xs font-mono">{tx.certificateHash.slice(0, 12)}...{tx.certificateHash.slice(-6)}</div>
                         </td>
-                        <td className="py-4 px-6">
-                          <div className="text-slate-100 font-mono text-sm truncate max-w-xs">{tx.transactionHash.slice(0, 12)}...{tx.transactionHash.slice(-6)}</div>
+                        <td className="py-4 px-2">
+                          <div className="text-card-foreground font-mono text-sm truncate max-w-xs">{tx.transactionHash.slice(0, 12)}...{tx.transactionHash.slice(-6)}</div>
                         </td>
-                        <td className="py-4 px-6">
-                          <div className="text-slate-100 font-mono text-sm">#{tx.blockNumber}</div>
+                        <td className="py-4 px-2">
+                          <div className="text-card-foreground font-mono text-sm">#{tx.blockNumber}</div>
                         </td>
-                        <td className="py-4 px-6">
-                          <div className="text-slate-100 text-sm">{formatDate(tx.timestamp)}</div>
+                        <td className="py-4 px-2">
+                          <div className="text-card-foreground text-sm">{formatDate(tx.timestamp)}</div>
                         </td>
-                        <td className="py-4 px-6">
-                          <span className="inline-flex px-3 py-1.5 bg-slate-800/50 text-slate-300 text-xs font-semibold uppercase tracking-wider rounded-lg border border-slate-700/50">
+                        <td className="py-4 px-2">
+                          <Badge variant="secondary" className="capitalize bg-card-foreground/10">
                             {tx.parachain}
-                          </span>
+                          </Badge>
                         </td>
-                        <td className="py-4 px-6">
-                          <span className={`inline-flex px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg border ${
-                            tx.status === 'verified' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' :
-                            tx.status === 'pending' ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' :
-                            'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                          }`}>
+                        <td className="py-4 px-2">
+                          <Badge variant={getStatusVariant(tx.status) as any} className="capitalize">
                             {tx.status}
-                          </span>
+                          </Badge>
                         </td>
-                        <td className="py-4 px-6">
-                          <span className="px-3 py-1.5 bg-slate-800/50 text-slate-300 text-xs font-semibold uppercase tracking-wider rounded-lg border border-slate-700/50">
+                        <td className="py-4 px-2">
+                          <Badge variant="outline" className="capitalize border-[#2DD4BF]/50 text-[#2DD4BF]">
                             {tx.type}
-                          </span>
+                          </Badge>
                         </td>
-                        <td className="py-4 px-6">
-                          <button className="text-cyan-400 hover:text-cyan-300 transition-colors p-2 hover:bg-cyan-500/10 rounded-lg">
+                        <td className="py-4 px-2">
+                          <Button variant="ghost" size="sm" className="p-0 h-auto text-[#E6007A] hover:text-[#E6007A]/80">
                             <ExternalLink size={16} />
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={8} className="py-16 text-center">
-                        <p className="text-slate-400 font-semibold">No transactions found matching your search criteria</p>
+                      <td colSpan={8} className="py-12 text-center text-card-foreground">
+                        <p>No transactions found matching your search criteria</p>
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
 
-        <div className="mt-12 text-center text-slate-400 text-sm">
-          <p className="font-semibold">All transactions are permanently recorded on the Polkadot Relay Chain and cannot be altered.</p>
+        <div className="mt-8 text-center text-card-foreground/60 text-sm">
+          <p>All transactions are permanently recorded on the Polkadot blockchain and cannot be altered.</p>
         </div>
       </div>
     </div>

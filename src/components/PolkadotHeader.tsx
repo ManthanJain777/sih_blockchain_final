@@ -61,72 +61,64 @@ export const PolkadotHeader: React.FC<PolkadotHeaderProps> = ({ onConnectionChan
   };
 
   return (
-    <div className="bg-slate-950/95 backdrop-blur-xl border-b border-cyan-500/20 text-slate-100 px-4 py-3 shadow-xl shadow-slate-950/50 sticky top-0 z-40">
+    <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 shadow-lg">
       <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30">
-            <Shield className="w-5 h-5 text-cyan-400" />
-          </div>
-          <span className="font-semibold text-sm uppercase tracking-widest text-slate-200">Polkadot Network</span>
-          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-            isConnected 
-              ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 shadow-lg shadow-emerald-500/10' 
-              : 'bg-rose-500/10 text-rose-300 border border-rose-500/30 shadow-lg shadow-rose-500/10'
+        <div className="flex items-center space-x-2">
+          <Shield className="w-5 h-5" />
+          <span className="font-semibold text-sm">Polkadot Network</span>
+          <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs ${
+            isConnected ? 'bg-green-500/20 text-green-100' : 'bg-red-500/20 text-red-100'
           }`}>
             {isConnected ? (
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-3 h-3" />
             ) : (
-              <XCircle className="w-4 h-4" />
+              <XCircle className="w-3 h-3" />
             )}
             <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           <NetworkSelector />
           
           {isConnected ? (
             <div className="relative">
               <button
                 onClick={() => setShowAccounts(!showAccounts)}
-                className="flex items-center space-x-2 bg-slate-900/70 border border-cyan-500/20 hover:border-cyan-500/50 px-4 py-2 rounded-xl transition-all hover:bg-slate-900 active:scale-95"
+                className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors"
               >
-                <Wallet className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm max-w-[140px] truncate text-slate-200">
+                <Wallet className="w-4 h-4" />
+                <span className="text-sm max-w-[120px] truncate">
                   {selectedAccount?.meta?.name || 'Account'}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showAccounts ? 'rotate-180' : ''}`} />
+                <ChevronDown className="w-3 h-3" />
               </button>
 
               {showAccounts && (
-                <div className="absolute right-0 top-full mt-2 bg-slate-950 text-slate-100 rounded-xl shadow-2xl border border-cyan-500/20 min-w-[260px] z-50 backdrop-blur-xl overflow-hidden animate-in fade-in-50 slide-in-from-top-2">
-                  <div className="p-3 border-b border-slate-800/50">
-                    <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Connected Accounts</p>
+                <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded-lg shadow-xl border border-gray-200 min-w-[200px] z-50">
+                  <div className="p-2 border-b border-gray-100">
+                    <p className="text-xs text-gray-500">Connected Accounts</p>
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {accounts.map((account) => (
-                      <button
-                        key={account.address}
-                        onClick={() => handleAccountChange(account)}
-                        className={`w-full text-left px-4 py-3 text-sm transition-all border-l-2 ${
-                          selectedAccount?.address === account.address 
-                            ? 'bg-cyan-500/10 border-l-cyan-500 text-cyan-300' 
-                            : 'border-l-transparent hover:bg-slate-900/50 text-slate-300 hover:text-slate-100'
-                        }`}
-                      >
-                        <div className="font-semibold truncate">
-                          {account.meta.name || 'Unknown'}
-                        </div>
-                        <div className="text-xs text-slate-500 truncate font-mono">
-                          {account.address.slice(0, 8)}...{account.address.slice(-6)}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="p-2 border-t border-slate-800/50">
+                  {accounts.map((account) => (
+                    <button
+                      key={account.address}
+                      onClick={() => handleAccountChange(account)}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                        selectedAccount?.address === account.address ? 'bg-purple-50 text-purple-600' : ''
+                      }`}
+                    >
+                      <div className="font-medium truncate">
+                        {account.meta.name || 'Unknown'}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        {account.address.slice(0, 8)}...{account.address.slice(-6)}
+                      </div>
+                    </button>
+                  ))}
+                  <div className="p-2 border-t border-gray-100">
                     <button
                       onClick={handleDisconnect}
-                      className="w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors font-semibold"
+                      className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
                     >
                       Disconnect
                     </button>
@@ -138,7 +130,7 @@ export const PolkadotHeader: React.FC<PolkadotHeaderProps> = ({ onConnectionChan
             <button
               onClick={handleConnect}
               disabled={isConnecting}
-              className="flex items-center space-x-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 hover:border-cyan-500 disabled:opacity-50 px-4 py-2 rounded-xl transition-all text-sm font-semibold text-cyan-300 hover:text-cyan-200 active:scale-95 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20"
+              className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 disabled:opacity-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
             >
               <Wallet className="w-4 h-4" />
               <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>

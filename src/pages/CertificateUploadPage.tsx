@@ -113,67 +113,59 @@ export function CertificateUploadPage({ isPolkadotConnected = false }: Certifica
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
-      {/* Radial Gradients */}
-      <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-cyan-500/20 to-blue-500/5 rounded-full blur-3xl opacity-60"></div>
-      <div className="absolute bottom-0 -right-32 w-[500px] h-[500px] bg-gradient-to-tl from-blue-500/10 to-cyan-500/5 rounded-full blur-3xl opacity-50"></div>
+    <div className="min-h-[calc(100vh-4rem)] bg-background relative overflow-hidden">
+      {/* Background shapes */}
+      <div className="absolute -top-40 -left-40 w-[550px] h-[550px] bg-[#8B5CF6] rounded-[40%_60%_70%_30%/60%_30%_70%_40%] opacity-90"></div>
+      <div className="absolute top-[5%] -right-32 w-[500px] h-[500px] bg-[#2DD4BF] rounded-[60%_40%_30%_70%/40%_60%_70%_30%] opacity-90"></div>
 
-      <div className="container mx-auto px-4 py-16 max-w-5xl relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-16 animate-fade-up">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-cyan-500/30 to-blue-500/20 rounded-3xl mb-8 shadow-2xl shadow-cyan-500/20 border border-cyan-500/20 backdrop-blur-xl">
-            <Award className="text-cyan-400" size={48} />
+      <div className="container mx-auto px-4 py-12 max-w-4xl relative z-10">
+        <div className="text-center mb-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#8B5CF6] to-[#2DD4BF] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-[#8B5CF6]/30">
+            <Award className="text-white" size={40} />
           </div>
-          
-          <h1 className="text-slate-100 mb-4 text-5xl uppercase font-black tracking-widest leading-tight">
-            Certificate<br />Verification
+          <h1 className="text-foreground mb-4 text-4xl uppercase font-black tracking-tight">
+            Certificate Verification
           </h1>
-          
-          <p className="text-slate-400 mb-8 text-lg max-w-2xl mx-auto leading-relaxed">
-            Enterprise-grade security for certificate verification powered by Polkadot blockchain
+          <p className="text-muted-foreground mb-6 text-lg">
+            Secure certificate verification on Polkadot blockchain
           </p>
 
-          {/* Status & Time Grid */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            {/* Polkadot Status */}
-            {isPolkadotConnected ? (
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500/10 rounded-xl text-emerald-300 text-sm font-semibold border border-emerald-500/30 shadow-lg shadow-emerald-500/10">
-                <Shield size={18} />
-                <span>Polkadot Connected</span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500/10 rounded-xl text-amber-300 text-sm font-semibold border border-amber-500/30 shadow-lg shadow-amber-500/10">
-                <Shield size={18} />
-                <span>Wallet Pending</span>
-              </div>
-            )}
-
-            {/* Time Display */}
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl text-cyan-300 shadow-lg shadow-cyan-500/10 font-semibold border border-cyan-500/20 backdrop-blur-xl">
-              <Clock size={18} />
-              <span className="font-mono">{formatTime(currentTime)}</span>
+          {/* Polkadot Status */}
+          {isPolkadotConnected ? (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E6007A] to-[#6F36BC] rounded-full text-white text-sm font-semibold mb-4 shadow-lg">
+              <Shield size={16} />
+              <span>Polkadot Connected</span>
             </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-500 rounded-full text-white text-sm font-semibold mb-4">
+              <Shield size={16} />
+              <span>Connect Polkadot Wallet to Start</span>
+            </div>
+          )}
+
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#E6007A] to-[#6F36BC] rounded-full text-white shadow-lg font-semibold">
+            <Clock size={20} />
+            <span>{formatTime(currentTime)}</span>
           </div>
           
-          {/* Mode Toggle */}
-          <div className="mt-8 flex items-center justify-center">
-            <div className="inline-flex items-center space-x-2 bg-slate-900/70 p-1.5 rounded-xl border border-slate-700/50">
+          <div className="mt-4 flex items-center justify-center">
+            <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-full">
               <button
                 onClick={() => setUseMockService(true)}
-                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                   useMockService 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20' 
-                    : 'text-slate-400 hover:text-slate-300'
+                    ? 'bg-[#E6007A] text-white shadow-md' 
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Demo Mode
               </button>
               <button
                 onClick={() => setUseMockService(false)}
-                className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                   !useMockService 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20' 
-                    : 'text-slate-400 hover:text-slate-300'
+                    ? 'bg-[#E6007A] text-white shadow-md' 
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Real Blockchain
@@ -183,21 +175,21 @@ export function CertificateUploadPage({ isPolkadotConnected = false }: Certifica
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-rose-500/10 border-rose-500/30 text-rose-300">
-            <AlertDescription className="font-semibold">{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {polkadotSuccess && (
-          <Alert className="mb-6 bg-emerald-500/10 border-emerald-500/30 text-emerald-300 shadow-lg shadow-emerald-500/10">
-            <CheckCircle className="h-5 w-5 text-emerald-400" />
-            <AlertDescription className="font-semibold">
-              ✓ Certificate verified on Polkadot blockchain successfully!
+          <Alert className="mb-6 bg-gradient-to-r from-[#E6007A]/20 to-[#6F36BC]/20 border-2 border-[#E6007A] shadow-lg">
+            <CheckCircle className="h-5 w-5 text-[#E6007A]" />
+            <AlertDescription className="text-foreground font-semibold">
+              Certificate verified on Polkadot blockchain successfully!
             </AlertDescription>
           </Alert>
         )}
 
-        <div className="space-y-8 max-w-3xl mx-auto">
+        <div className="space-y-6 max-w-3xl mx-auto">
           <CertificateUploader
             onCertificateData={handleCertificateData}
             onUploadToBlockchain={handleUploadToBlockchain}
@@ -205,66 +197,64 @@ export function CertificateUploadPage({ isPolkadotConnected = false }: Certifica
           />
 
           {polkadotSuccess && certificateData && (
-            <div className="p-8 bg-gradient-to-br from-slate-900/80 to-slate-950 border-2 border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/10 relative overflow-hidden backdrop-blur-xl">
-              <div className="absolute -top-20 -right-20 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
-              
-              <h3 className="text-slate-100 mb-8 font-bold text-2xl uppercase tracking-widest relative z-10">
-                Verification Proof
+            <div className="p-8 bg-card border-2 border-[#E6007A] rounded-3xl shadow-2xl shadow-[#E6007A]/20 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FACC15]/20 rounded-full blur-2xl"></div>
+              <h3 className="text-card-foreground mb-6 font-bold text-2xl uppercase tracking-wide relative z-10">
+                Certificate Verification Proof
               </h3>
-              
-              <div className="space-y-6 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
+              <div className="space-y-4 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
                       Certificate Hash
                     </p>
-                    <p className="text-cyan-300 font-mono text-sm break-all bg-slate-950/70 p-3 rounded-lg border border-cyan-500/10">
+                    <p className="text-card-foreground font-mono break-all bg-card-foreground/5 p-3 rounded-xl">
                       {certificateData.certificateHash}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
-                      Transaction Hash
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
+                      Polkadot Transaction
                     </p>
-                    <p className="text-cyan-300 font-mono text-sm break-all bg-slate-950/70 p-3 rounded-lg border border-cyan-500/10">
+                    <p className="text-card-foreground font-mono break-all bg-card-foreground/5 p-3 rounded-xl">
                       {polkadotTransactionHash}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
-                      Type
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
+                      Certificate Type
                     </p>
-                    <p className="text-slate-200 capitalize bg-slate-950/70 p-3 rounded-lg border border-slate-700/30">
+                    <p className="text-card-foreground bg-card-foreground/5 p-3 rounded-xl capitalize">
                       {certificateData.certificateType}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
                       Issuer
                     </p>
-                    <p className="text-slate-200 bg-slate-950/70 p-3 rounded-lg border border-slate-700/30 truncate">
+                    <p className="text-card-foreground bg-card-foreground/5 p-3 rounded-xl">
                       {certificateData.issuer}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
                       Recipient
                     </p>
-                    <p className="text-slate-200 bg-slate-950/70 p-3 rounded-lg border border-slate-700/30 truncate">
+                    <p className="text-card-foreground bg-card-foreground/5 p-3 rounded-xl">
                       {certificateData.recipient}
                     </p>
                   </div>
-                  <div className="p-4 bg-slate-950/50 border border-slate-700/50 rounded-xl">
-                    <p className="text-slate-400 font-semibold mb-2 text-sm uppercase tracking-wide">
+                  <div>
+                    <p className="text-card-foreground/60 font-semibold mb-1">
                       Issue Date
                     </p>
-                    <p className="text-slate-200 bg-slate-950/70 p-3 rounded-lg border border-slate-700/30">
+                    <p className="text-card-foreground bg-card-foreground/5 p-3 rounded-xl">
                       {new Date(certificateData.issueDate).toLocaleDateString()}
                     </p>
                   </div>

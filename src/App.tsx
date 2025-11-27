@@ -1,46 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
 import { ChatBot } from './components/ChatBot';
+import { HomePage } from './pages/HomePage';
+import { UploadPage } from './pages/UploadPage';
 import { VerifyPage } from './pages/VerifyPage';
+import { AboutPage } from './pages/AboutPage';
 import { CertificateUploadPage } from './pages/CertificateUploadPage';
 import { TransactionHistoryPage } from './pages/TransactionHistoryPage';
 import { PolkadotHeader } from './components/PolkadotHeader'; // NEW
 
 export default function App() {
-  const allowedPages = ['certificate', 'transactions', 'verify'] as const;
-  type Page = typeof allowedPages[number];
-
-  const [currentPage, setCurrentPage] = useState<Page>('certificate');
+  const [currentPage, setCurrentPage] = useState('home');
   const [isPolkadotConnected, setIsPolkadotConnected] = useState(false); // NEW
 
-  const normalizePage = (page: string): Page => {
-    return allowedPages.includes(page as Page) ? (page as Page) : 'certificate';
-  };
-
   useEffect(() => {
-    // Handle initial hash with fallback to certificate
-    const initialHash = window.location.hash.slice(1);
-    const normalizedInitial = normalizePage(initialHash);
-    setCurrentPage(normalizedInitial);
-    if (initialHash !== normalizedInitial) {
-      window.location.hash = normalizedInitial;
-    }
+    // Handle initial hash
+    const hash = window.location.hash.slice(1) || 'home';
+    setCurrentPage(hash);
 
     // Listen for hash changes
     const handleHashChange = () => {
-      const newHash = window.location.hash.slice(1);
-      const normalizedHash = normalizePage(newHash);
-      setCurrentPage(normalizedHash);
-      if (newHash !== normalizedHash) {
-        window.location.hash = normalizedHash;
-      }
+      const newHash = window.location.hash.slice(1) || 'home';
+      setCurrentPage(newHash);
     };
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handlePageChange = (page: Page) => {
+  const handlePageChange = (page: string) => {
     window.location.hash = page;
   };
 
@@ -51,35 +39,41 @@ export default function App() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={handlePageChange} isPolkadotConnected={isPolkadotConnected} />;
+      case 'upload':
+        return <UploadPage isPolkadotConnected={isPolkadotConnected} />;
       case 'certificate':
         return <CertificateUploadPage isPolkadotConnected={isPolkadotConnected} />;
       case 'transactions':
-        return <TransactionHistoryPage isPolkadotConnected={isPolkadotConnected} />;
+        return <TransactionHistoryPage />;
       case 'verify':
         return <VerifyPage isPolkadotConnected={isPolkadotConnected} />;
+      case 'about':
+        return <AboutPage />;
       default:
-        return <CertificateUploadPage isPolkadotConnected={isPolkadotConnected} />;
+        return <HomePage onNavigate={handlePageChange} isPolkadotConnected={isPolkadotConnected} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-background">
       {/* NEW: Polkadot Header */}
       <PolkadotHeader onConnectionChange={handlePolkadotConnection} />
       
       <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
-      <main className="bg-slate-950">
+      <main>
         {renderPage()}
       </main>
       
-      <footer className="bg-slate-950/95 backdrop-blur-xl border-t border-cyan-500/20 py-12 mt-32 relative overflow-hidden">
-        <div className="absolute -bottom-20 -left-32 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl"></div>
+      <footer className="bg-card border-t-2 border-border/50 py-8 mt-20 relative overflow-hidden">
+        <div className="absolute -top-20 left-1/2 w-60 h-60 bg-[#8B5CF6]/10 rounded-full blur-3xl"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <p className="text-slate-200 font-bold uppercase tracking-widest mb-2">
+          <p className="text-card-foreground font-bold uppercase tracking-wide mb-2">
             Polkadot File Verifier
           </p>
-          <p className="text-slate-400 text-sm">
-            Enterprise Security | SHA256 Hashing | Polkadot Blockchain
+          <p className="text-card-foreground/60">
+            Powered by SHA256 and Polkadot Blockchain Technology
           </p>
         </div>
       </footer>

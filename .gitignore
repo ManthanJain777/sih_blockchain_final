@@ -50,3 +50,9 @@ config.json
 
 # Local configuration files
 *.local
+
+# Backup directories
+src_backup/
+
+# Qwen code directory
+qwen-code/

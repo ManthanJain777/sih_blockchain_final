@@ -1,13 +1,17 @@
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiPromise } from '@polkadot/api';
 import { web3Accounts, web3Enable, web3FromSource } from '@polkadot/extension-dapp';
 import { u8aToHex, hexToU8a } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { ConnectionManager } from './ConnectionManager';
+import { getNetworkEndpoints, getDefaultNetwork, NetworkType } from './NetworkConfig';
 
 export class PolkadotService {
   private static instance: PolkadotService;
   private api: ApiPromise | null = null;
   private accounts: any[] = [];
   private selectedAccount: any = null;
+  private currentNetwork: string = 'polkadot'; // Changed default from astar to polkadot for stable connection
+  private connectionManager: ConnectionManager;
 
   public static getInstance(): PolkadotService {
     if (!PolkadotService.instance) {
@@ -16,13 +20,13 @@ export class PolkadotService {
     return PolkadotService.instance;
   }
 
+  constructor() {
+    this.connectionManager = ConnectionManager.getInstance();
+  }
+
   async connectWallet(): Promise<boolean> {
     try {
       console.log('🔗 Connecting to Polkadot...');
-
-      // Connect to Astar network by default - can be changed to other networks
-      const provider = new WsProvider('wss://astar-rpc.dwellir.com');
-      this.api = await ApiPromise.create({ provider });
 
       // Enable browser extension
       const extensions = await web3Enable('MediaVerificationApp');
@@ -30,13 +34,16 @@ export class PolkadotService {
         throw new Error('No Polkadot extension found. Please install Polkadot.js extension.');
       }
 
+      // Use the connection manager with fallback
+      this.api = await this.connectionManager.connectWithFallback(this.currentNetwork);
+
       // Get accounts
       this.accounts = await web3Accounts();
       if (this.accounts.length > 0) {
         this.selectedAccount = this.accounts[0];
       }
 
-      console.log('✅ Polkadot connected successfully');
+      console.log(`✅ Connected to ${this.currentNetwork} network`);
       return true;
     } catch (error) {
       console.error('❌ Polkadot connection failed:', error);
@@ -45,98 +52,28 @@ export class PolkadotService {
   }
 
   // Add support for connecting to different networks in the Polkadot ecosystem
-  async connectToNetwork(network: 'polkadot' | 'kusama' | 'acala' | 'astar' | 'moonbeam' | 'statemint' | 'paseo') {
+  // Create API connection with fallback to alternative endpoints for all networks
+  async connectToNetwork(network: NetworkType) {
     try {
-      let providerUrl = '';
-
-      switch(network) {
-        case 'polkadot':
-          providerUrl = 'wss://polkadot-rpc.dwellir.com';
-          break;
-        case 'kusama':
-          providerUrl = 'wss://kusama-rpc.dwellir.com';
-          break;
-        case 'acala':
-          providerUrl = 'wss://acala-rpc.dwellir.com';
-          break;
-        case 'astar':
-          providerUrl = 'wss://astar-rpc.dwellir.com';
-          break;
-        case 'moonbeam':
-          providerUrl = 'wss://wss.api.moonbeam.network';
-          break;
-        case 'statemint':
-          providerUrl = 'wss://statemint-rpc.dwellir.com';
-          break;
-        case 'paseo':
-          providerUrl = 'wss://rpc.ibp.network/paseo'; // Fixed: Removed invalid UUID path, using public RPC endpoint
-          break;
-        default:
-          providerUrl = 'wss://astar-rpc.dwellir.com'; // default to astar as original
-      }
+      this.currentNetwork = network;
 
       if (this.api) {
-        try {
-          await this.api.disconnect();
-        } catch (e) {
-          // Ignore disconnect errors
-        }
-        this.api = null;
+        await this.api.disconnect();
       }
 
-      // Get fallback endpoints
-      const endpoints = this.getEndpointsWithFallback(providerUrl);
-      
-      let lastError: Error | null = null;
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`🔄 Attempting to connect to ${network} via: ${endpoint}`);
-          
-          const provider = new WsProvider(endpoint, 3000); // 3 second connection timeout
-          
-          this.api = await Promise.race([
-            ApiPromise.create({ provider, throwOnConnect: false }),
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('Connection timeout')), 10000)
-            )
-          ]);
+      this.api = await this.connectionManager.connectWithFallback(network);
 
-          // Wait for the API to be ready with timeout
-          await Promise.race([
-            this.api.isReady,
-            new Promise<never>((_, reject) => 
-              setTimeout(() => reject(new Error('API ready timeout')), 10000)
-            )
-          ]);
-
-          // Reinitialize accounts with the new connection
-          const extensions = await web3Enable('MediaVerificationApp');
-          if (extensions.length > 0) {
-            this.accounts = await web3Accounts();
-            if (this.accounts.length > 0 && !this.selectedAccount) {
-              this.selectedAccount = this.accounts[0];
-            }
-          }
-
-          console.log(`✅ Connected to ${network} network via ${endpoint}`);
-          return true;
-        } catch (error) {
-          console.warn(`⚠️ Connection failed to ${endpoint}:`, error);
-          lastError = error as Error;
-          
-          if (this.api) {
-            try {
-              await this.api.disconnect();
-            } catch (e) {
-              // Ignore disconnect errors
-            }
-            this.api = null;
-          }
-          continue;
+      // Reinitialize accounts with the new connection
+      const extensions = await web3Enable('MediaVerificationApp');
+      if (extensions.length > 0) {
+        this.accounts = await web3Accounts();
+        if (this.accounts.length > 0 && !this.selectedAccount) {
+          this.selectedAccount = this.accounts[0];
         }
       }
 
-      throw lastError || new Error('All connection attempts failed');
+      console.log(`✅ Connected to ${network} network`);
+      return true;
     } catch (error) {
       console.error(`❌ Failed to connect to ${network} network:`, error);
       return false;
@@ -276,26 +213,5 @@ export class PolkadotService {
 
   getApi() {
     return this.api;
-  }
-
-  private getEndpointsWithFallback(primaryEndpoint: string): string[] {
-    const fallbacks: Record<string, string[]> = {
-      'wss://rpc.ibp.network/paseo': [
-        'wss://rpc.ibp.network/paseo',
-        'wss://paseo-rpc.dwellir.com',
-        'wss://paseo-rpc.polkadot.io'
-      ],
-      'wss://polkadot-rpc.dwellir.com': [
-        'wss://polkadot-rpc.dwellir.com',
-        'wss://rpc.polkadot.io',
-        'wss://polkadot.api.onfinality.io/public-ws'
-      ],
-      'wss://kusama-rpc.dwellir.com': [
-        'wss://kusama-rpc.dwellir.com',
-        'wss://kusama-rpc.polkadot.io',
-        'wss://kusama.api.onfinality.io/public-ws'
-      ]
-    };
-    return fallbacks[primaryEndpoint] || [primaryEndpoint];
   }
 }
